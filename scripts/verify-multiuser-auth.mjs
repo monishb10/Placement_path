@@ -28,8 +28,7 @@ const bundle = await build({stdin: {resolveDir: process.cwd(), sourcefile: 'mult
   }};
 `}, plugins: [{name: 'request-context', setup(builder) {
   builder.onResolve({filter: /^next\/headers$/}, () => ({path: 'headers', namespace: 'test'}));
-  builder.onResolve({filter: /chatgpt-auth$/}, () => ({path: 'chatgpt', namespace: 'test'}));
-  builder.onLoad({filter: /.*/, namespace: 'test'}, args => ({loader: 'js', contents: args.path === 'chatgpt' ? 'export async function getChatGPTUser(){return null;}' : `export async function cookies(){return {get(name){const values=(globalThis.currentRequest.headers.get('cookie')||'').split(';').map(x=>x.trim()).filter(x=>x.startsWith(name+'='));return values.length===1?{value:values[0].slice(name.length+1)}:undefined;}};}`}));
+  builder.onLoad({filter: /.*/, namespace: 'test'}, () => ({loader: 'js', contents: `export async function cookies(){return {get(name){const values=(globalThis.currentRequest.headers.get('cookie')||'').split(';').map(x=>x.trim()).filter(x=>x.startsWith(name+'='));return values.length===1?{value:values[0].slice(name.length+1)}:undefined;}};}`}));
 }}], external: ['cloudflare:workers'], bundle: true, write: false, format: 'esm', platform: 'browser', target: 'es2022'});
 const tokens = {Alice:'github_pat_alice_test_only_1234567890',Bob:'github_pat_bob_test_only_1234567890'};
 const ids = {Alice:101,Bob:202};
@@ -76,7 +75,7 @@ async function request(path,{method='GET',body,cookie:session,account,...more}={
 async function begin() {
   const response = await request('/api/auth/github');assert.equal(response.status,303);
   const url = new URL(response.headers.get('Location'));assert.equal(url.origin,'https://github.com');
-  assert.equal(url.searchParams.get('scope'),'read:user');assert.equal(url.searchParams.get('code_challenge_method'),'S256');
+  assert.equal(url.searchParams.get('scope'),'read:user,repo');assert.equal(url.searchParams.get('code_challenge_method'),'S256');
   const stateCookie = cookie(response,'__Host-placement_oauth');assert.ok(stateCookie);
   const value = stateCookie.split('=')[1], [state,verifier] = value.split('.');
   assert.equal(url.searchParams.get('state'),state);assert.equal(url.searchParams.get('code_challenge'),await hash(verifier));

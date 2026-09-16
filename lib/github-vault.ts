@@ -14,7 +14,7 @@ export async function encryptGitHubToken(token:string,userId:string,secret:strin
 }
 export async function decryptGitHubToken(value:string,userId:string,secret:string,repository=GITHUB_REPOSITORY) {
   const [version,iv,ciphertext]=value.split('.');if(!['v1','v2'].includes(version)||!iv||!ciphertext)throw new Error('Invalid GitHub connection.');
-  if(version==='v1'&&repository.toLowerCase()!==GITHUB_REPOSITORY.toLowerCase())throw new Error('Reconnect GitHub for this repository.');
+  if(version==='v1'&&repository.toLowerCase()!=='muthudeenathayalan/dsa'&&repository.toLowerCase()!==GITHUB_REPOSITORY.toLowerCase())throw new Error('Reconnect GitHub for this repository.');
   const decrypted=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes(iv),additionalData:version==='v1'?legacyContext(userId):context(userId,repository)},await key(secret),bytes(ciphertext));
   return new TextDecoder().decode(decrypted);
 }

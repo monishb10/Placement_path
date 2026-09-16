@@ -1,7 +1,7 @@
 export type StudyUser = {
   userId: string;
   displayName: string;
-  provider: 'chatgpt' | 'github';
+  provider: 'github';
   githubId?: string;
   githubLogin?: string;
 };

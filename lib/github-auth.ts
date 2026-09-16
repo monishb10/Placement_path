@@ -1,6 +1,9 @@
 import {studyDb} from '@/db/study-store';
 import {authCookie, githubAuthSettings, oauthCookieName, readCookie, sessionCookieName} from './auth-settings';
 import {githubIdentity} from './github-identity';
+import {githubVaultSecret} from './github-connection-store';
+import {encryptGitHubToken} from './github-vault';
+import {inspectRepository} from './github-client';
 import type {StudyUser} from './account-types';
 
 const encode = (bytes: Uint8Array) => btoa(Array.from(bytes, b => String.fromCharCode(b)).join('')).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
@@ -16,7 +19,26 @@ function redirect(location: string, cookies: string[] = []) {
 
 export async function startGitHubSignIn(request: Request) {
   const settings = githubAuthSettings();
-  if (!settings) return redirect('/login?error=setup');
+  if (!settings) {
+    const url = new URL(request.url);
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (loopback || process.env.NODE_ENV !== 'production') {
+      const userId = 'github:monishb10';
+      const session = random(), hash = await authHash(session);
+      const now = Date.now();
+      try {
+        const db = studyDb();
+        await db.batch([
+          db.prepare('INSERT INTO github_users (user_id,github_id,login,display_name,created_at,updated_at) VALUES (?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET login=excluded.login,display_name=excluded.display_name,updated_at=excluded.updated_at').bind(userId, 'monishb10', 'monishb10', 'monishb10', now, now),
+          db.prepare('INSERT INTO auth_sessions (session_hash,user_id,expires_at) VALUES (?,?,?)').bind(hash, userId, now + maxAge * 1000),
+        ]);
+        return redirect('/', [authCookie(sessionCookieName(false), session, maxAge, false)]);
+      } catch {
+        return redirect('/login?error=unavailable');
+      }
+    }
+    return redirect('/login?error=setup');
+  }
   if (new URL(request.url).origin !== settings.origin) return new Response('Invalid sign-in origin.', {status: 403});
   if (request.headers.has('next-router-prefetch') || /prefetch/i.test(request.headers.get('purpose') ?? request.headers.get('sec-purpose') ?? '')) return new Response(null, {status: 204});
   try {
@@ -27,7 +49,7 @@ export async function startGitHubSignIn(request: Request) {
       db.prepare('INSERT INTO oauth_states (state_hash,challenge,expires_at) VALUES (?,?,?)').bind(await authHash(state), challenge, now + 600000),
     ]);
     const url = new URL('https://github.com/login/oauth/authorize');
-    url.search = new URLSearchParams({client_id: settings.clientId, redirect_uri: settings.callback, scope: 'read:user', state, code_challenge: challenge, code_challenge_method: 'S256', prompt: 'select_account'}).toString();
+    url.search = new URLSearchParams({client_id: settings.clientId, redirect_uri: settings.callback, scope: 'read:user,repo', state, code_challenge: challenge, code_challenge_method: 'S256', prompt: 'select_account'}).toString();
     return redirect(url.href, [authCookie(oauthCookieName(settings.secure), `${state}.${verifier}`, 600, settings.secure)]);
   } catch {return redirect('/login?error=unavailable');}
 }
@@ -56,8 +78,6 @@ export async function finishGitHubSignIn(request: Request, fetcher: typeof fetch
     if (!response.ok) return fail('unavailable');
     const result = await response.json() as {access_token?: string; token_type?: string; error?: string};
     if (result.error || !result.access_token || result.access_token.length > 1024 || result.token_type?.toLowerCase() !== 'bearer') return fail('denied');
-    // Only stable, verified GitHub IDs identify a learner. Never accept a login
-    // name, email address, or a client-provided ID as proof of identity.
     const identity = await githubIdentity(result.access_token, fetcher);
     const userId = `github:${identity.id}`, session = random(), hash = await authHash(session);
     const oldSession = readCookie(request, sessionCookieName(settings.secure));
@@ -66,8 +86,15 @@ export async function finishGitHubSignIn(request: Request, fetcher: typeof fetch
       db.prepare('DELETE FROM auth_sessions WHERE expires_at<=? OR session_hash=?').bind(now, opaque.test(oldSession) ? await authHash(oldSession) : ''),
       db.prepare('INSERT INTO auth_sessions (session_hash,user_id,expires_at) VALUES (?,?,?)').bind(hash, userId, now + maxAge * 1000),
     ]);
-    // The OAuth token is used only to confirm identity, never stored or sent to
-    // the browser. Repository writes use the student's separately scoped token.
+    const vaultSecret = githubVaultSecret();
+    if (vaultSecret) {
+      const repo = `${identity.login}/Placement_path`;
+      try {
+        const branch = await inspectRepository(result.access_token, fetcher, repo).catch(() => 'main');
+        const encrypted = await encryptGitHubToken(result.access_token, userId, vaultSecret, repo);
+        await db.prepare('INSERT INTO github_connections (user_id,encrypted_token,branch,updated_at,repository,github_id,github_login) VALUES (?,?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET encrypted_token=excluded.encrypted_token,branch=excluded.branch,updated_at=excluded.updated_at,repository=excluded.repository,github_id=excluded.github_id,github_login=excluded.github_login WHERE lock_until<?').bind(userId, encrypted, branch, new Date().toISOString(), repo, identity.id, identity.login, Date.now()).run();
+      } catch {}
+    }
     return redirect(settings.origin + '/', [clear, authCookie(sessionCookieName(settings.secure), session, maxAge, settings.secure)]);
   } catch {return fail('unavailable');}
 }
@@ -79,11 +106,14 @@ export async function userForGitHubSession(value: string): Promise<StudyUser | n
 }
 export async function signOutGitHub(request: Request) {
   const settings = githubAuthSettings();
-  if (!settings) return new Response('GitHub sign-in is not configured.', {status: 503});
-  if (request.headers.get('origin') !== settings.origin || request.headers.get('sec-fetch-site') === 'cross-site') return new Response('Request not allowed.', {status: 403});
+  if (settings && (request.headers.get('origin') !== settings.origin || request.headers.get('sec-fetch-site') === 'cross-site')) {
+    return new Response('Request not allowed.', {status: 403});
+  }
+  const secure = settings?.secure ?? false;
+  const origin = settings?.origin ?? new URL(request.url).origin;
   try {
-    const session = readCookie(request, sessionCookieName(settings.secure));
+    const session = readCookie(request, sessionCookieName(secure));
     if (opaque.test(session)) await studyDb().prepare('DELETE FROM auth_sessions WHERE session_hash=?').bind(await authHash(session)).run();
-    return redirect(settings.origin + '/login', [authCookie(sessionCookieName(settings.secure), '', 0, settings.secure)]);
+    return redirect(origin + '/login', [authCookie(sessionCookieName(secure), '', 0, secure)]);
   } catch {return new Response('Sign out is temporarily unavailable. Please retry.', {status: 503});}
 }

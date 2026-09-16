@@ -44,13 +44,14 @@ const adapter={prepare(sql){return {args:[],bind(...args){this.args=args;return 
   db.run(sql,this.args);return {meta:{changes:db.getRowsModified()}};
 },async all(){const s=db.prepare(sql);s.bind(this.args);const rows=[];while(s.step())rows.push(s.getAsObject());s.free();return {results:rows};},async first(){return (await this.all()).results[0]??null;}};},async batch(items){db.run('BEGIN');try{const rows=[];for(const item of items)rows.push(await item.run());db.run('COMMIT');return rows;}catch(error){db.run('ROLLBACK');throw error;}}};
 globalThis.testDb=adapter;
-const api='https://api.github.com/repos/Muthudeenathayalan/DSA',files=new Map();let commits=0,requests=0,forcedStatus=0;
+const testRepo='monishb10/Placement_path';
+const api='https://api.github.com/repos/'+testRepo,files=new Map();let commits=0,requests=0,forcedStatus=0;
 const token='github_pat_example_for_mock_tests_1234567890';
 globalThis.fetch=async(url,init={})=>{
-  requests++;if(url==='https://api.github.com/user')return Response.json({id:123,login:'Muthudeenathayalan',name:'Muthu',type:'User'});assert.ok(String(url).startsWith(api),'unexpected network destination');
+  requests++;if(url==='https://api.github.com/user')return Response.json({id:123,login:'monishb10',name:'Monish',type:'User'});assert.ok(String(url).startsWith(api),'unexpected network destination');
   assert.equal(init.redirect,'manual');assert.equal(init.headers.Authorization,`Bearer ${token}`);
   if(forcedStatus)return Response.json({message:'private provider diagnostic'},{status:forcedStatus});
-  if(url===api)return Response.json({full_name:'Muthudeenathayalan/DSA',default_branch:'master',permissions:{push:true}});
+  if(url===api)return Response.json({full_name:testRepo,default_branch:'master',permissions:{push:true}});
   const p=String(url).slice(api.length).split('?')[0];
   if(init.method==='PUT'){
     const body=JSON.parse(init.body),old=files.get(p);assert.equal(body.branch,'master');
@@ -61,7 +62,7 @@ globalThis.fetch=async(url,init={})=>{
   }
   return files.has(p)?Response.json(files.get(p)):Response.json({message:'Not found'},{status:404});
 };
-const req=(method,body={},query='')=>new Request('https://study.example/api/test'+query,{method,headers:{'Content-Type':'application/json','sec-fetch-site':'same-origin'},...(method==='GET'?{}:{body:JSON.stringify({...body,...(body.token?{repository:'Muthudeenathayalan/DSA'}:{})})})});
+const req=(method,body={},query='')=>new Request('https://study.example/api/test'+query,{method,headers:{'Content-Type':'application/json','sec-fetch-site':'same-origin'},...(method==='GET'?{}:{body:JSON.stringify({...body,...(body.token?{repository:testRepo}:{})})})});
 const body=async response=>{const value=await response.json();assert.equal(JSON.stringify(value).includes(token),false,'API must never expose credentials');return value;};
 
 // Auth, connection isolation, encryption, and default-branch discovery.
@@ -69,16 +70,16 @@ globalThis.testUser=null;assert.equal((await github.GET(req('GET'))).status,401)
 const foreign=req('PUT',{token});foreign.headers.set('sec-fetch-site','cross-site');assert.equal((await github.PUT(foreign)).status,403);
 let response=await github.PUT(req('PUT',{token}));assert.equal(response.status,200);assert.equal((await body(response)).branch,'master');assert.equal(commits,0);
 const encrypted=(await adapter.prepare('SELECT encrypted_token FROM github_connections').first()).encrypted_token;
-assert.equal(encrypted.includes(token),false);assert.equal(await decryptGitHubToken(encrypted,'learner-a',secret),token);
-await assert.rejects(()=>decryptGitHubToken(encrypted,'learner-b',secret));
+assert.equal(encrypted.includes(token),false);assert.equal(await decryptGitHubToken(encrypted,'learner-a',secret,testRepo),token);
+await assert.rejects(()=>decryptGitHubToken(encrypted,'learner-b',secret,testRepo));
 // Existing private-site connections use v1 encryption and must survive upgrade.
 const legacyIv=crypto.getRandomValues(new Uint8Array(12));
 const legacyKey=await crypto.subtle.importKey('raw',Buffer.from(secret,'base64'),{name:'AES-GCM'},false,['encrypt']);
 const legacyBytes=await crypto.subtle.encrypt({name:'AES-GCM',iv:legacyIv,additionalData:new TextEncoder().encode('placement-path:github:Muthudeenathayalan/DSA:learner-a')},legacyKey,new TextEncoder().encode(token));
 const legacyToken=`v1.${Buffer.from(legacyIv).toString('base64')}.${Buffer.from(legacyBytes).toString('base64')}`;
-assert.equal(await decryptGitHubToken(legacyToken,'learner-a',secret),token);
+assert.equal(await decryptGitHubToken(legacyToken,'learner-a',secret,'Muthudeenathayalan/DSA'),token);
 await assert.rejects(()=>decryptGitHubToken(legacyToken,'learner-a',secret,'another-user/DSA'));
-assert.notEqual(await encryptGitHubToken(token,'learner-a',secret),encrypted);
+assert.notEqual(await encryptGitHubToken(token,'learner-a',secret,testRepo),encrypted);
 assert.equal(solutionPath(sqlTask).endsWith('/query.sql'),true);
 assert.throws(()=>solutionPath({...task,topicId:'../outside'}));
 

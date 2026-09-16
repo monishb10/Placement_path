@@ -83,7 +83,7 @@ export default function CodingHub({topicId,today,todayTopic,ready,legacy,onSelec
   async function copyCoach(){
     const session=cache.current.get(task.id)?.session;
     const text=`Help me solve coding problem ${task.number}/10: ${task.title}. Topic: ${topic.title}. Language: ${task.language}.\nProblem: ${task.statement}\nInput: ${task.inputFormat}\nOutput: ${task.outputFormat}\nConstraints: ${task.constraints.join('; ')}\nMy approach: ${session?.explanation||'Not written yet'}\nMy code:\n${session?.code||'Not written yet'}\nLatest result: ${session?.judge?`${session.judge.passed}/${session.judge.total} passed`:'Not run yet'}.\nAsk me to explain my approach. Give one hint at a time, and only show an interview-quality solution after I have attempted and explained mine.`;
-    try{await navigator.clipboard.writeText(text);toast.success('Coding prompt copied. Paste it into this ChatGPT conversation.');}catch{toast.error('Clipboard unavailable. Send your code and approach in this conversation.');}
+    try{await navigator.clipboard.writeText(text);toast.success('Coding prompt copied to clipboard.');}catch{toast.error('Clipboard unavailable. Send your code and approach to your coach.');}
   }
   coachRef.current=()=>void copyCoach();
   function choose(id:string){void persistRef.current(task.id);setChoices(old=>({...old,[topic.id]:id}));setListOpen(false);}

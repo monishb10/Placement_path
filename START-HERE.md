@@ -18,10 +18,9 @@ website address and database configuration before it can be used. Credentials
 are not included in this ZIP. The setup guide covers both local use and a shared
 Cloudflare deployment, including database migrations.
 
-The existing private ChatGPT Site continues using ChatGPT sign-in and its
-current access policy. This ZIP's GitHub-only sign-in is for an independently
-hosted copy. Existing ChatGPT progress is not automatically transferred to a
-GitHub account.
+All authentication and account tracking is powered exclusively by GitHub sign-in.
+Each learner's study progress, coding submissions, and streaks are securely
+tied to their GitHub profile.
 
 ## Open the project
 

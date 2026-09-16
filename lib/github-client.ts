@@ -2,7 +2,7 @@ import {GITHUB_REPOSITORY} from './github-types';
 
 export function normalizeRepository(value:string) {
   const repository=value.trim();
-  if(!/^[a-z\d][a-z\d-]{0,38}\/[a-z\d_.-]{1,100}$/i.test(repository)||['.','..'].includes(repository.split('/')[1]))throw new GitHubError('Enter a repository as your-username/DSA.');
+  if(!/^[a-z\d][a-z\d-]{0,38}\/[a-z\d_.-]{1,100}$/i.test(repository)||['.','..'].includes(repository.split('/')[1]))throw new GitHubError('Enter a repository as your-username/Placement_path.');
   return repository;
 }
 const repositoryUrl=(repository:string)=>`https://github.com/${normalizeRepository(repository)}`;

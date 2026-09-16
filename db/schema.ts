@@ -16,7 +16,7 @@ export const codingAttempts=sqliteTable('coding_attempts',{
 export const githubConnections=sqliteTable('github_connections',{
   userId:text('user_id').primaryKey(),
   encryptedToken:text('encrypted_token').notNull(),
-  repository:text('repository').notNull().default('Muthudeenathayalan/DSA'),
+  repository:text('repository').notNull().default('monishb10/Placement_path'),
   githubId:text('github_id'),
   githubLogin:text('github_login'),
   branch:text('branch').notNull(),
@@ -27,7 +27,7 @@ export const githubConnections=sqliteTable('github_connections',{
 export const githubSaves=sqliteTable('github_saves',{
   userId:text('user_id').notNull(),
   taskId:text('task_id').notNull(),
-  repository:text('repository').notNull().default('Muthudeenathayalan/DSA'),
+  repository:text('repository').notNull().default('monishb10/Placement_path'),
   sourceHash:text('source_hash').notNull(),
   blobSha:text('blob_sha').notNull(),
   fileUrl:text('file_url').notNull(),

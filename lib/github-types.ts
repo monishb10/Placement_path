@@ -1,5 +1,4 @@
-// Legacy owner-only connection: retained only for migration and server setup.
-export const GITHUB_REPOSITORY = 'Muthudeenathayalan/DSA';
+export const GITHUB_REPOSITORY = 'monishb10/Placement_path';
 export const GITHUB_REPOSITORY_URL = `https://github.com/${GITHUB_REPOSITORY}`;
 export type GitHubSave = {
   status: 'saved' | 'error' | 'busy' | 'not_accepted' | 'disconnected';

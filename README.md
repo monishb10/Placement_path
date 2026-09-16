@@ -4,13 +4,11 @@ A private daily study workspace for Java, DSA and placement preparation.
 
 ## Sharing with friends
 
-See [GitHub sign-in setup](docs/GITHUB-SIGNIN-SETUP.md) for the multi-user version.
-Each student can sign in with GitHub on an independently configured host, keep
-their own progress and connect their own repository. The existing Sites
-publication continues using its current ChatGPT identity and private audience.
-The account switch is controlled by `PLACEMENT_AUTH_MODE`; GitHub mode requires
-an OAuth Client ID, Client Secret and exact public origin. The exported source
-contains placeholders and setup instructions, never actual credentials.
+See [GitHub sign-in setup](docs/GITHUB-SIGNIN-SETUP.md) for hosting and configuration.
+Each student signs in with their own GitHub account, keeps separate study progress,
+streaks, code drafts and can automatically contribute accepted solutions to their
+own repository (`Placement_path`).
+Authentication is exclusively powered by GitHub OAuth with `PLACEMENT_AUTH_MODE=github`.
 
 The redesigned blue-and-white workspace uses top navigation, a four-column daily checklist board, a persistent focus timer, a searchable lesson directory, a dedicated Coding navigation section, and a project interview studio. The roadmap pairs phase navigation with a focused lesson list, and the lesson reader separates concepts, worked examples, and interview practice into tabs. Each topic displays a direct GeeksforGeeks link.
 
@@ -26,9 +24,9 @@ Each of the 59 topics now has 10 distinct, original questions: 3 Easy, 4 Medium,
 
 Responsive layouts, checkbox feedback, animated progress rings, activity charts and card transitions respect reduced-motion preferences. UI changes do not change the D1 schema or authentication.
 
-Progress is saved in D1 and scoped to the signed-in ChatGPT user. Optimistic version checks prevent stale tabs from overwriting newer progress. No external AI API is used: the coach button copies the current topic, revision needs and coding attempt for review in ChatGPT. The coding workspace runs Java through the public Paiza.IO API. Each of the 41 Java/DSA tasks has an exact input/output contract, constraints, two samples, and additional boundary cases (219 cases total). Users can run samples, submit all provided cases, or run custom stdin. Compiler diagnostics, runtime errors, timeouts, and expected-versus-actual output are displayed separately. A successful full submission updates the solved count; sample and custom runs never award acceptance. Previously saved judge results identify the source by SHA-256, and the interface identifies stale results after edits. Output judging checks correctness for the supplied cases; algorithm choice, code quality, and complexity explanations still need review.
+Progress is saved in D1 and scoped to the signed-in GitHub user. Optimistic version checks prevent stale tabs from overwriting newer progress. No external AI API is used: the coach button copies the current topic, revision needs and coding attempt for review with your AI coach. The coding workspace runs Java through the public Paiza.IO API. Each of the 41 Java/DSA tasks has an exact input/output contract, constraints, two samples, and additional boundary cases (219 cases total). Users can run samples, submit all provided cases, or run custom stdin. Compiler diagnostics, runtime errors, timeouts, and expected-versus-actual output are displayed separately. A successful full submission updates the solved count and auto-commits the accepted code to the user's connected GitHub repository. Previously saved judge results identify the source by SHA-256, and the interface identifies stale results after edits. Output judging checks correctness for the supplied cases; algorithm choice, code quality, and complexity explanations still need review.
 
-Code and test input are sent to Paiza.IO only after explicit consent through the permission checkbox or the Allow & run dialog. The API also requires the consent flag. The authenticated server fixes the provider and Java language, validates task/case IDs and source sizes, limits response sizes and waiting time, and never forwards Site identity headers or cookies. Service unavailability produces an explicit retry state. Existing progress remains compatible through optional judge/complexity fields; the database schema is unchanged.
+Code and test input are sent to Paiza.IO only after explicit consent through the permission checkbox or the Allow & run dialog. The API also requires the consent flag. The authenticated server fixes the provider and Java language, validates task/case IDs and source sizes, limits response sizes and waiting time, and never forwards identity headers or cookies. Service unavailability produces an explicit retry state. Existing progress remains compatible through optional judge/complexity fields; the database schema is unchanged.
 
 ## Development
 

@@ -12,7 +12,7 @@ const knownTask=(id:unknown)=>typeof id==='string'&&Object.hasOwn(practiceById,i
 export async function GET(request:Request){
   const user=await getStudyUser(request);if(!user)return json({error:'Sign in to manage GitHub.'},401);
   const id=new URL(request.url).searchParams.get('taskId');if(id&&!knownTask(id))return json({error:'Unknown coding problem.'},400);
-  try{const connection=await githubConnection(user.userId,id??undefined);return json({...connection,suggestedRepository:connection.repository||(user.githubLogin?`${user.githubLogin}/DSA`:'')});}catch(error){
+  try{const connection=await githubConnection(user.userId,id??undefined);return json({...connection,suggestedRepository:connection.repository||(user.githubLogin?`${user.githubLogin}/Placement_path`:'monishb10/Placement_path')});}catch(error){
     if(error instanceof GitHubError)return json({configured:!!githubVaultSecret(),connected:false,repository:'',setupError:error.message});
     return json({error:'Could not load your GitHub connection. Please retry.'},503);
   }

@@ -1,10 +1,9 @@
 import {env} from 'cloudflare:workers';
 
-export function authMode(): 'chatgpt' | 'github' {
-  return env.PLACEMENT_AUTH_MODE === 'github' ? 'github' : 'chatgpt';
+export function authMode(): 'github' {
+  return 'github';
 }
 export function githubAuthSettings() {
-  if (authMode() !== 'github') return null;
   const clientId = env.PLACEMENT_GITHUB_CLIENT_ID?.trim();
   const clientSecret = env.PLACEMENT_GITHUB_CLIENT_SECRET?.trim();
   const configuredOrigin = env.PLACEMENT_PUBLIC_ORIGIN?.trim();
