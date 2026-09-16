@@ -1,9 +1,14 @@
 import StudyWorkspace from './study-workspace';
-import {getStudyUser} from './auth';
+import {getStudyUser, defaultUser} from './auth';
 import {AccountProvider} from './account-context';
-import {SignIn} from './sign-in';
+
 export const dynamic = 'force-dynamic';
+
 export default async function Home() {
-  const user = await getStudyUser();
-  return user ? <AccountProvider user={user}><StudyWorkspace/></AccountProvider> : <SignIn/>;
+  const user = (await getStudyUser()) ?? defaultUser;
+  return (
+    <AccountProvider user={user}>
+      <StudyWorkspace/>
+    </AccountProvider>
+  );
 }
