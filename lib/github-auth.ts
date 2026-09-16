@@ -18,18 +18,23 @@ function redirect(location: string, cookies: string[] = []) {
 }
 
 export async function startGitHubSignIn(request: Request) {
+  const url = new URL(request.url);
+  const usernameParam = url.searchParams.get('username')?.trim() || url.searchParams.get('login')?.trim();
+  const cleanUsername = usernameParam ? usernameParam.replace(/^@+/, '') : '';
   const settings = githubAuthSettings();
   if (!settings) {
-    const url = new URL(request.url);
     const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
     if (loopback || process.env.NODE_ENV !== 'production') {
-      const userId = 'github:monishb10';
+      const login = (cleanUsername && /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(cleanUsername))
+        ? cleanUsername
+        : (cleanUsername || 'monishb10');
+      const userId = `github:${login}`;
       const session = random(), hash = await authHash(session);
       const now = Date.now();
       try {
         const db = studyDb();
         await db.batch([
-          db.prepare('INSERT INTO github_users (user_id,github_id,login,display_name,created_at,updated_at) VALUES (?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET login=excluded.login,display_name=excluded.display_name,updated_at=excluded.updated_at').bind(userId, 'monishb10', 'monishb10', 'monishb10', now, now),
+          db.prepare('INSERT INTO github_users (user_id,github_id,login,display_name,created_at,updated_at) VALUES (?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET login=excluded.login,display_name=excluded.display_name,updated_at=excluded.updated_at').bind(userId, login, login, login, now, now),
           db.prepare('INSERT INTO auth_sessions (session_hash,user_id,expires_at) VALUES (?,?,?)').bind(hash, userId, now + maxAge * 1000),
         ]);
         return redirect('/', [authCookie(sessionCookieName(false), session, maxAge, false)]);
@@ -48,9 +53,21 @@ export async function startGitHubSignIn(request: Request) {
       db.prepare('DELETE FROM oauth_states WHERE expires_at<=? OR state_hash=?').bind(now, opaque.test(previous) ? await authHash(previous) : ''),
       db.prepare('INSERT INTO oauth_states (state_hash,challenge,expires_at) VALUES (?,?,?)').bind(await authHash(state), challenge, now + 600000),
     ]);
-    const url = new URL('https://github.com/login/oauth/authorize');
-    url.search = new URLSearchParams({client_id: settings.clientId, redirect_uri: settings.callback, scope: 'read:user,repo', state, code_challenge: challenge, code_challenge_method: 'S256', prompt: 'select_account'}).toString();
-    return redirect(url.href, [authCookie(oauthCookieName(settings.secure), `${state}.${verifier}`, 600, settings.secure)]);
+    const authorizeUrl = new URL('https://github.com/login/oauth/authorize');
+    const params: Record<string, string> = {
+      client_id: settings.clientId,
+      redirect_uri: settings.callback,
+      scope: 'read:user,repo',
+      state,
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+      prompt: 'select_account',
+    };
+    if (cleanUsername) {
+      params.login = cleanUsername;
+    }
+    authorizeUrl.search = new URLSearchParams(params).toString();
+    return redirect(authorizeUrl.href, [authCookie(oauthCookieName(settings.secure), `${state}.${verifier}`, 600, settings.secure)]);
   } catch {return redirect('/login?error=unavailable');}
 }
 
