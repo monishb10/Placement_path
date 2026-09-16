@@ -22,7 +22,7 @@ CREATE TABLE `oauth_states` (
 );
 --> statement-breakpoint
 CREATE INDEX `oauth_states_expiry_idx` ON `oauth_states` (`expires_at`);--> statement-breakpoint
-ALTER TABLE `github_connections` ADD `repository` text DEFAULT 'Muthudeenathayalan/DSA' NOT NULL;--> statement-breakpoint
+ALTER TABLE `github_connections` ADD `repository` text DEFAULT 'monishb10/Placement_path' NOT NULL;--> statement-breakpoint
 ALTER TABLE `github_connections` ADD `github_id` text;--> statement-breakpoint
 ALTER TABLE `github_connections` ADD `github_login` text;--> statement-breakpoint
-ALTER TABLE `github_saves` ADD `repository` text DEFAULT 'Muthudeenathayalan/DSA' NOT NULL;
+ALTER TABLE `github_saves` ADD `repository` text DEFAULT 'monishb10/Placement_path' NOT NULL;

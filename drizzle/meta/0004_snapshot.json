@@ -160,7 +160,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'Muthudeenathayalan/DSA'"
+          "default": "'monishb10/Placement_path'"
         },
         "github_id": {
           "name": "github_id",
@@ -235,7 +235,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'Muthudeenathayalan/DSA'"
+          "default": "'monishb10/Placement_path'"
         },
         "source_hash": {
           "name": "source_hash",
