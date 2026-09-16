@@ -1,0 +1,13 @@
+.signin-page{min-height:100dvh;display:grid;place-items:center;padding:32px 20px;background:radial-gradient(ellipse at 20% 0%,#e6ecff 0,transparent 55%),#f3f6fc;color:#233854}
+.signin-card{width:100%;max-width:470px;padding:36px;background:white;border:1px solid #d8e2f3;border-radius:22px;box-shadow:0 16px 70px #213e6c10}
+.signin-brand{display:flex;align-items:center;gap:11px;margin-bottom:38px}.signin-brand>strong{font-size:23px;letter-spacing:-1px}.signin-brand>strong>span{font-weight:400}.signin-eyebrow{font-size:12px;font-weight:650;letter-spacing:1.4px;color:#526f9c}
+.signin-card h1{font-size:34px;line-height:1.3;letter-spacing:-1px;margin:9px 0 10px;font-weight:700}.signin-card>p{font-size:16px;line-height:1.7;color:#637695}
+.signin-details{display:grid;gap:16px;margin:28px 0 32px}.signin-details>span{display:flex;align-items:center;gap:12px;font-size:15px;color:#40597a}.signin-details svg{color:#4362d4;flex-shrink:0}
+.signin-action{width:100%;min-height:49px;display:flex;align-items:center;justify-content:center;gap:11px;background:#344fc5;color:white;border:0;border-radius:9px;font-size:16px;font-weight:600;transition:background .18s,transform .18s}
+.signin-action:hover{background:#263d9f;transform:translateY(-1px)}.signin-action:focus-visible{outline:3px solid #91acff;outline-offset:3px}.signin-action:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.signin-card>.signin-footnote{font-size:14px;line-height:1.65;margin:18px 0 0}.signin-card>.signin-error{font-size:15px;line-height:1.6;color:#a34824;padding:12px;background:#fff3e9;border:1px solid #efd5c2;border-radius:8px;margin-bottom:18px}
+.account-trigger{cursor:pointer}.account-trigger:focus-visible{outline:2px solid #5579e8;outline-offset:3px}.study-account-menu[data-slot=dropdown-menu-content]{min-width:230px;padding:7px;background:white;border-color:#dce5f2;border-radius:10px;box-shadow:0 10px 35px #1a31551c}
+.study-account-menu [data-slot=dropdown-menu-label]{padding:10px 9px;font-size:15px;color:#2a405e}.study-account-menu [data-slot=dropdown-menu-label]>strong{display:block;max-width:260px;overflow-wrap:anywhere}.study-account-menu [data-slot=dropdown-menu-label]>span{display:flex;align-items:center;gap:6px;color:#687d9c;font-weight:400;font-size:14px;margin-top:5px}
+.study-account-menu [data-slot=dropdown-menu-item]{width:100%;font-size:14px;padding:10px;gap:9px;cursor:pointer}.github-connection-content .github-repository-input{margin-bottom:16px}.github-connected-account{font-size:14px;color:#5b7592}
+@media(max-width:520px){.signin-card{padding:28px 24px}.signin-brand{margin-bottom:30px}.signin-card h1{font-size:30px}}
+@media(prefers-reduced-motion:reduce){.signin-action{transition:none;transform:none}}

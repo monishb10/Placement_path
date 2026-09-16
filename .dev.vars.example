@@ -1,0 +1,8 @@
+# Copy this file to .dev.vars for local GitHub sign-in.
+# Keep .dev.vars private. Never send it to friends or commit it to GitHub.
+PLACEMENT_AUTH_MODE=github
+PLACEMENT_PUBLIC_ORIGIN=http://localhost:5173
+PLACEMENT_GITHUB_CLIENT_ID=
+PLACEMENT_GITHUB_CLIENT_SECRET=
+# Optional for encrypted repository tokens; generate your own 32-byte base64 key.
+PLACEMENT_GITHUB_VAULT_KEY=
