@@ -1,25 +1,25 @@
 'use client';
 
 import {useState, type CSSProperties} from 'react';
-import {ArrowRight, ArrowUpRight, BookOpen, Brain, Braces, CalendarDays, Check, CheckCheck, Clock3, Code2, Copy, Flame, FolderCode, GraduationCap, LayoutDashboard, Lightbulb, ListChecks, Loader2, Map, MessageSquare, Pause, Play, RotateCcw, Sprout, HeartPulse, BarChart3, Target, ShieldCheck,ExternalLink} from 'lucide-react';
+import {ArrowRight, ArrowUpRight, BookOpen, Brain, Braces, CalendarDays, Check, CheckCheck, Clock3, Code2, Copy, Flame, GraduationCap, LayoutDashboard, Lightbulb, ListChecks, Loader2, Map, MessageSquare, Pause, Play, RotateCcw, BarChart3, ExternalLink} from 'lucide-react';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Progress} from '@/components/ui/progress';
 import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs';
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
 import {Table,TableBody,TableCell,TableHead,TableHeader,TableRow} from '@/components/ui/table';
 import {Empty,EmptyDescription,EmptyHeader,EmptyMedia,EmptyTitle} from '@/components/ui/empty';
-import {blocks,dateFromKey,isComplete,lessons,phases,placementTopics,projectItems,taskIds,type Lesson,type Session,type StudyState} from '@/lib/study-data';
+import {blocks,dateFromKey,isComplete,lessons,phases,placementTopics,taskIds,type Lesson,type Session,type StudyState} from '@/lib/study-data';
 import {gfgUrl,topicResources} from '@/lib/topic-resources';
 import {dashboardStats} from '@/lib/dashboard-data';
 import {AccountMenu} from './account-menu';
 
-export type WorkspaceView='dashboard'|'today'|'coding'|'roadmap'|'library'|'progress'|'projects';
+export type WorkspaceView='dashboard'|'today'|'coding'|'roadmap'|'library'|'progress';
 export type StudyBlock='revision'|'learn'|'code'|'placement';
 export const workspaceNavigation=[
   {id:'dashboard',label:'Overview',icon:LayoutDashboard},{id:'today',label:'My day',icon:ListChecks},
   {id:'coding',label:'Coding',icon:Code2},
   {id:'roadmap',label:'Roadmap',icon:Map},{id:'library',label:'Learn',icon:BookOpen},
-  {id:'progress',label:'Progress',icon:BarChart3},{id:'projects',label:'Projects',icon:FolderCode},
+  {id:'progress',label:'Progress',icon:BarChart3},
 ] as const;
 
 export function WorkspaceHeader({saveStatus,onHome}:{saveStatus:string;onHome:()=>void}){
@@ -70,11 +70,3 @@ export function ProgressView({data,today,onToday,onWeekly}:{data:StudyState;toda
   </div>;
 }
 
-export function ProjectsView({data,ready,onToggle,onNotes,onQuestions,onCoding}:{onCoding:(id:string)=>void;data:StudyState;onQuestions:(id:string)=>void;ready:boolean;onToggle:(id:string,item:string,checked:boolean)=>void;onNotes:(id:string,value:string)=>void}){
-  const [active,setActive]=useState('flocksense');
-  const projects=[{id:'flocksense',title:'FlockSense',caption:'Livestock health & farm intelligence',icon:Sprout,color:'green'},{id:'flowpulse',title:'FlowPulse',caption:'Hospital queues & patient flow',icon:HeartPulse,color:'blue'}];
-  const project=projects.find(p=>p.id===active)!,Icon=project.icon,done=data.projects[active].length;
-  return <div><PageHeading eyebrow="PROJECT INTERVIEW STUDIO" title="Explain what you built" description="Turn your project work into a clear, confident interview answer."/>
-    <Tabs value={active} onValueChange={setActive} className="project-studio"><TabsList className="project-selector" aria-label="Choose project">{projects.map(p=><TabsTrigger key={p.id} value={p.id}><p.icon size={21}/><span>{p.title}</span><small>{data.projects[p.id].length}/{projectItems.length}</small></TabsTrigger>)}</TabsList><TabsContent value={active} key={active} className="project-studio-content"><section className={`project-outline ${project.color}`}><div className="project-identity"><span><Icon size={31}/></span><div><h2>{project.title}</h2><p>{project.caption}</p></div></div><div className="project-mastery"><span>Talking points practised</span><strong>{done}<small> / {projectItems.length}</small></strong><Progress value={done/projectItems.length*100} aria-label={`${project.title} preparation`}/></div><div className="project-tip"><Target size={20}/><h3>A good answer covers</h3><p>The problem, your contribution, how it works, and one result you can demonstrate.</p></div><button className="primary-button project-question-link" onClick={()=>onCoding(project.id)}><Code2 size={16}/>Code · 10 problems <ArrowRight size={16}/></button><button className="secondary-button project-question-link" onClick={()=>onQuestions(project.id)}>10 interview questions <ArrowRight size={16}/></button><div className="project-evidence"><ShieldCheck size={18}/><p>Use actual code and results. Be clear about implemented features and future ideas.</p></div></section><section className="project-work"><div className="section-heading"><h2>Prepare your talking points</h2><span>Tick after practising aloud</span></div><div className="project-topic-grid">{projectItems.map((item,i)=><div className={`task-row ${data.projects[active].includes(item)?'task-done':''}`} key={item}><Checkbox id={`${active}-${i}`} className="task-checkbox" checked={data.projects[active].includes(item)} disabled={!ready} onCheckedChange={v=>onToggle(active,item,v===true)}/><label htmlFor={`${active}-${i}`}>{item}</label></div>)}</div><div className="pitch-workspace"><div><label htmlFor="project-pitch" className="field-label">Your 60-second project pitch</label><span>Problem → contribution → approach → outcome</span></div><textarea id="project-pitch" value={data.projectNotes[active]} disabled={!ready} maxLength={4000} rows={6} placeholder="The problem I wanted to solve was… My contribution was… The main data flow is… One challenge I handled was…" onChange={e=>onNotes(active,e.target.value)}/><span className="small-note">Keep it specific to the work you personally did.</span></div></section></TabsContent></Tabs>
-  </div>;
-}

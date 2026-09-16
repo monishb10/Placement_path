@@ -3,7 +3,7 @@
 import {useStudyFetch} from './account-context';
 
 import {lazy,Suspense,useCallback,useEffect,useRef,useState,type CSSProperties} from 'react';
-import {BookOpen,Map,BarChart3,FolderCode,ArrowUpRight,Play,Pause,RotateCcw,ChevronRight,Check,Clock3,Flame,Code2,Sparkles,Target,CalendarDays,LockKeyhole,Copy,Lightbulb,HeartPulse,Sprout,GraduationCap,ListChecks,ArrowRight,ExternalLink,Loader2,RefreshCw,CheckCheck,Brain,MessageSquare,Flag,LayoutDashboard} from 'lucide-react';
+import {BookOpen,Map,BarChart3,ArrowUpRight,Play,Pause,RotateCcw,ChevronRight,Check,Clock3,Flame,Code2,Sparkles,Target,CalendarDays,LockKeyhole,Copy,Lightbulb,GraduationCap,ListChecks,ArrowRight,ExternalLink,Loader2,RefreshCw,CheckCheck,Brain,MessageSquare,Flag,LayoutDashboard} from 'lucide-react';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Progress} from '@/components/ui/progress';
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs';
@@ -12,7 +12,7 @@ import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/compo
 import {Toaster} from '@/components/ui/sonner';
 import {Empty,EmptyHeader,EmptyMedia,EmptyTitle,EmptyDescription} from '@/components/ui/empty';
 import {toast} from 'sonner';
-import {blocks,lessons,phases,placementTopics,projectItems,steps,taskIds,initialState,newSession,localDate,dateFromKey,isComplete,type StudyState,type Session} from '@/lib/study-data';
+import {blocks,lessons,phases,placementTopics,steps,taskIds,initialState,newSession,localDate,dateFromKey,isComplete,type StudyState,type Session} from '@/lib/study-data';
 
 import {Dashboard} from './dashboard';
 const CodingHub=lazy(()=>import('./coding-hub'));
@@ -22,7 +22,7 @@ import {topicResources} from '@/lib/topic-resources';
 import {hasStudyActivity} from '@/lib/dashboard-data';
 import {placementResources,dailyPlacementResourceIds} from '@/lib/placement-resources';
 
-import {WorkspaceHeader,TodayBoard,FocusDock,LearningRoadmap,ProgressView,ProjectsView,type WorkspaceView} from './workspace-panels';
+import {WorkspaceHeader,TodayBoard,FocusDock,LearningRoadmap,ProgressView,type WorkspaceView} from './workspace-panels';
 
 type View=WorkspaceView;
 type Modal='revision'|'learn'|'placement'|'reflection'|'weekly'|'resource'|'placement-resource'|null;
@@ -129,7 +129,6 @@ export default function StudyWorkspace(){
     {view==='roadmap'&&<LearningRoadmap onCoding={openCoding} initialPhase={roadmapPhase} lesson={lesson} queued={data.currentTopic} mastered={data.mastered} ready={ready} onOpen={openResource} onNext={setNextTopic} onToggle={(id,done)=>mutate(d=>{d.mastered=done?Array.from(new Set([...d.mastered,id])):d.mastered.filter(x=>x!==id);})}/>}
     {view==='library'&&<TopicLibrary mastered={data.mastered} currentTopic={data.currentTopic} onOpen={openResource} onPlacement={openPlacementResource} onQuestions={openQuestions} onPlacementQuestions={openPlacementQuestions} onCoding={openCoding}/>}
     {view==='progress'&&<ProgressView data={data} today={today} onToday={()=>setView('today')} onWeekly={()=>openModal('weekly')}/>}
-    {view==='projects'&&<ProjectsView onCoding={openCoding} data={data} ready={ready} onQuestions={openPlacementQuestions} onToggle={(id,item,done)=>mutate(d=>{d.projects[id]=done?Array.from(new Set([...d.projects[id],item])):d.projects[id].filter(x=>x!==item);})} onNotes={(id,value)=>mutate(d=>{d.projectNotes[id]=value;})}/>}
     </TabsContent><footer className="workspace-footer"><span><GraduationCap size={16}/>Placement Path</span><span><LockKeyhole size={13}/>Your private study workspace</span></footer>
     </main><FocusDock compact={view==='coding'} activeBlock={activeBlock} remaining={remaining} running={running} ready={ready} onChoose={chooseTimer} onStartPause={startPause} onReset={()=>chooseTimer(activeBlock)} onCoach={view==='coding'?()=>codingCoachRef.current():copyCoach}/>
     {celebrate&&<div className="celebration" aria-hidden="true">{Array.from({length:24},(_,i)=><i key={i} style={{'--i':i,'--x':`${(i*37)%100}%`,'--r':`${i*29}deg`,'--c':['#3659ed','#a07adb','#2da685','#e9ac51'][i%4]} as CSSProperties}/>)}</div>}
